@@ -207,17 +207,17 @@ public class Program
                     Console.WriteLine("Error message: ");
                     Console.WriteLine(ex.Message);
 
-                    return false;
+                    //return false; --> We should continue to search for other stores
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Failed to import           {0}, {1} due to unknown error.",
+                    Console.WriteLine("Failed to export           {0}, {1} due to unknown error.",
                         store.Name, store.Location);
 
                     Console.WriteLine("Error message: ");
                     Console.WriteLine(ex.Message);
 
-                    return false;
+                    //return false; --> We should continue to search for other stores
                 }
             }
 
