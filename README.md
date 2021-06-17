@@ -1,6 +1,6 @@
 # CertStealer
 
-A .NET tool for stealing and importing certificates without touching disk.
+A .NET tool for stealing and importing certificates in the Windows certificate store without touching disk. Useful for red team operations where you need to poach a certificate for pivoting purposes and want to do so with an in-memory post-ex payload.
 
 This tool is flagged as malware by Defender, even though it's custom. It is misidentified as some particular strain of publically known malware. As such, DO NOT run it from disk on-target. DO NOT run it in memory on target WITHOUT AMSI BYPASSED. And DO obfuscate it with a tool like ConfuserEx, just in case.
 
