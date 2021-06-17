@@ -128,12 +128,12 @@ public class Program
             {
                 X509Store store = new X509Store(storeName, storeLocation);
 
+                if (!String.IsNullOrEmpty(name) && store.Name != name)
+                    continue;
+
                 try
                 {
                     store.Open(OpenFlags.OpenExistingOnly);
-
-                    if (!String.IsNullOrEmpty(name) && store.Name != name)
-                        continue;
 
                     Console.WriteLine("Yes    {0,4}  {1}, {2}",
                         store.Certificates.Count, store.Name, store.Location);
@@ -162,12 +162,12 @@ public class Program
             {
                 X509Store store = new X509Store(storeName, storeLocation);
 
+                if (!String.IsNullOrEmpty(name) && store.Name != name)
+                    continue;
+
                 try
                 {
-                    store.Open(OpenFlags.OpenExistingOnly);
-
-                    if (!String.IsNullOrEmpty(name) && store.Name != name)
-                        continue;
+                    store.Open(OpenFlags.OpenExistingOnly);                    
 
                     foreach (X509Certificate certificate in (store.Certificates))
                     {
