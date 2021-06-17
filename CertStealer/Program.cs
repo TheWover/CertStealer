@@ -17,6 +17,12 @@ public class Program
         [Option('l', "list", Required = false, HelpText = "Lists all certs, their details, and prints them in their serialized form.")]
         public bool List { get; set; }
 
+        [Option('s', "store", Required = false, HelpText = "Confines a list to a specified store.")]
+        public string Store { get; set; }
+
+        [Option('n', "name", Required = false, HelpText = "Confines a list to a specified location.")]
+        public string Location { get; set; }
+
         [Option('v', "verbose", Required = false, HelpText = "Verbose output.")]
         public bool Verbose { get; set; }
 
@@ -31,7 +37,16 @@ public class Program
                    {
                        if (o.List)
                        {
-                           List(o.Verbose);
+                           string location = "";
+                           string store = "";
+
+                           if (!String.IsNullOrEmpty(o.Store))
+                               store = o.Store;
+
+                           if (!String.IsNullOrEmpty(o.Location))
+                               location = o.Location;
+
+                           List(o.Verbose, location, store);
                        }
                        else if (o.Export)
                        {
@@ -76,8 +91,6 @@ public class Program
                                        Import(cert, storename, StoreLocation.CurrentUser, o.Verbose);
                                        break;
                                }
-
-                               
                            }  
                        }
                        else if (o.HelpMessage)
@@ -85,14 +98,31 @@ public class Program
                    });
     }
 
-    public static void List(bool verbose = false)
+    public static void List(bool verbose = false, string location = "", string name = "")
     {
         Console.WriteLine("\r\nExisting Certs Name and Location");
         Console.WriteLine("------ ----- -------------------------");
 
+        StoreLocation loc = StoreLocation.LocalMachine;
+        if (!String.IsNullOrEmpty(location))
+        {
+            switch (location)
+            {
+                case "local":
+                    loc = StoreLocation.LocalMachine;
+                    break;
+                case "user":
+                    loc = StoreLocation.CurrentUser;
+                    break;
+            }
+        }
+
         foreach (StoreLocation storeLocation in (StoreLocation[])
             Enum.GetValues(typeof(StoreLocation)))
         {
+            if (!String.IsNullOrEmpty(location) && storeLocation != loc)
+                continue;
+
             foreach (StoreName storeName in (StoreName[])
                 Enum.GetValues(typeof(StoreName)))
             {
@@ -101,6 +131,9 @@ public class Program
                 try
                 {
                     store.Open(OpenFlags.OpenExistingOnly);
+
+                    if (!String.IsNullOrEmpty(name) && store.Name != name)
+                        continue;
 
                     Console.WriteLine("Yes    {0,4}  {1}, {2}",
                         store.Certificates.Count, store.Name, store.Location);
@@ -120,6 +153,10 @@ public class Program
         foreach (StoreLocation storeLocation in (StoreLocation[])
             Enum.GetValues(typeof(StoreLocation)))
         {
+
+            if (!String.IsNullOrEmpty(location) && storeLocation != loc)
+                continue;
+
             foreach (StoreName storeName in (StoreName[])
                 Enum.GetValues(typeof(StoreName)))
             {
@@ -128,6 +165,9 @@ public class Program
                 try
                 {
                     store.Open(OpenFlags.OpenExistingOnly);
+
+                    if (!String.IsNullOrEmpty(name) && store.Name != name)
+                        continue;
 
                     foreach (X509Certificate certificate in (store.Certificates))
                     {
@@ -277,6 +317,8 @@ public class Program
 
         Console.WriteLine("Display this help message: CertStealer.exe --help");
         Console.WriteLine("Listing all certs: CertStealer.exe --list");
+        Console.WriteLine("Listing all certs within the My store in CurrentUser: CertStealer.exe --name user --store My --list");
+        Console.WriteLine("Listing all certs within the CA store in LocalMachine: CertStealer.exe --name local --store CA --list");
         Console.WriteLine("Exporting a cert by its thumbprint: CertStealer.exe -export AF724CB571166C24C0799E65BE4772B10814BDD2");
         Console.WriteLine("Exporting a cert by its thumbprint as PFX: CertStealer.exe -export pfx AF724CB571166C24C0799E65BE4772B10814BDD2");
         Console.WriteLine("Importing a cert into the My store in CurrentUser: CertStealer.exe --import My user Dw...snipped...gY=");

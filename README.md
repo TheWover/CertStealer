@@ -10,6 +10,8 @@ Examples:
 
 Display this help message: CertStealer.exe --help
 Listing all certs: CertStealer.exe --list
+Listing all certs within the My store in CurrentUser: CertStealer.exe --name user --store My --list
+Listing all certs within the CA store in LocalMachine: CertStealer.exe --name local --store CA --list
 Exporting a cert by its thumbprint: CertStealer.exe -export AF724CB571166C24C0799E65BE4772B10814BDD2
 Exporting a cert by its thumbprint as PFX: CertStealer.exe -export pfx AF724CB571166C24C0799E65BE4772B10814BDD2
 Importing a cert into the My store in CurrentUser: CertStealer.exe --import My user Dw...snipped...gY=
