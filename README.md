@@ -4,6 +4,7 @@ A .NET tool for stealing and importing certificates in the Windows certificate s
 
 This tool is flagged as malware by Defender, even though it's custom. It is misidentified as some particular strain of publically known malware. As such, DO NOT run it from disk on-target. DO NOT run it in memory on target WITHOUT AMSI BYPASSED. And DO obfuscate it with a tool like ConfuserEx, just in case.
 
+If you export a certificate with a private key as PFX then the password will be blank. *Blank*, not non-existent.
 
 ```
 Examples:
