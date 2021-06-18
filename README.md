@@ -6,6 +6,8 @@ This tool is flagged as malware by Defender, even though it's custom. It is misi
 
 If you export a certificate with a private key as PFX then the password will be blank. *Blank*, not non-existent.
 
+If keys are marked as not exportable then you will have to patch CAPI to allow export of non-exportable keys. This can be done with mimikatz via the `crypto::capi` command.
+
 ```
 Examples:
 

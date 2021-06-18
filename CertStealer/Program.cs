@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using CommandLine;
@@ -366,6 +367,28 @@ public class Program
                         Console.WriteLine();
                     }
                 }
+                else if (extension.Oid.FriendlyName == "Subject Alternative Name")
+                {
+                    Console.WriteLine("\t[Friendly Name]\n\t\t" + extension.Oid.FriendlyName);
+                    Console.WriteLine();
+
+                    Console.WriteLine("\t[OID]\n\t\t" + extension.Oid.Value);
+                    Console.WriteLine();
+
+                    Console.WriteLine("\t[Subject Alt Name]\n\t\t" + extension.Format(true));
+                    Console.WriteLine();
+                }
+                else if (extension.Oid.FriendlyName == "Certificate Template Information")
+                {
+                    Console.WriteLine("\t[Friendly Name]\n\t\t" + extension.Oid.FriendlyName);
+                    Console.WriteLine();
+
+                    Console.WriteLine("\t[OID]\n\t\t" + extension.Oid.Value);
+                    Console.WriteLine();
+
+                    Console.WriteLine("\t[Certificate Template Information]\n\t\t" + extension.Format(true));
+                    Console.WriteLine();
+                }
                 else
                 {
                     Console.WriteLine("\t[Friendly Name]\n\t\t" + extension.Oid.FriendlyName);
@@ -488,6 +511,7 @@ public class Program
             return false;
         }
     }
+
     public static void Help()
     {
         Console.WriteLine("Examples:\n");
