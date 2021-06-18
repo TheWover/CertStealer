@@ -396,6 +396,9 @@ public class Program
 
                     Console.WriteLine("\t[OID]\n\t\t" + extension.Oid.Value);
                     Console.WriteLine();
+
+                    Console.WriteLine("\t[Details]\n\t\t" + extension.Format(true));
+                    Console.WriteLine();
                 }
 
                 Console.WriteLine("\t\t----------------------------------");
