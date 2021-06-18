@@ -58,6 +58,8 @@ public class Program
                                    type = args[args.Length - 2];
                                thumbprint = args[args.Length - 1];
 
+                               DisplayCertificate(thumbprint, true);
+
                                switch (type)
                                {
                                    case "serialized":
@@ -167,20 +169,11 @@ public class Program
 
                 try
                 {
-                    store.Open(OpenFlags.OpenExistingOnly);                    
+                    store.Open(OpenFlags.OpenExistingOnly);
 
-                    foreach (X509Certificate certificate in (store.Certificates))
-                    {
-                        Console.WriteLine("----------------------------------");
-                        Console.WriteLine("Details:");
-                        Console.WriteLine(certificate.ToString());
-
-
-                        if (verbose)
-                            Console.WriteLine(Convert.ToBase64String(certificate.Export(X509ContentType.SerializedCert)));
-
-                        Console.WriteLine();
-                    }
+                    // Print the certificate details
+                    foreach (X509Certificate2 certificate in (store.Certificates))
+                        DisplayCertificate(certificate, verbose);
                 }
                 catch (CryptographicException ex)
                 {
@@ -203,6 +196,191 @@ public class Program
         }
     }
 
+    public static void DisplayCertificate(string thumbprint, bool verbose = false)
+    {
+        foreach (StoreLocation storeLocation in (StoreLocation[])
+            Enum.GetValues(typeof(StoreLocation)))
+        {
+            foreach (StoreName storeName in (StoreName[])
+                Enum.GetValues(typeof(StoreName)))
+            {
+                X509Store store = new X509Store(storeName, storeLocation);
+
+                try
+                {
+                    store.Open(OpenFlags.OpenExistingOnly);
+
+                    foreach (X509Certificate2 certificate in (store.Certificates))
+                    {
+                        if (certificate.GetCertHashString() == thumbprint)
+                        {
+                            try
+                            {
+                                DisplayCertificate(certificate, verbose);
+                            }
+                            catch (CryptographicException ex)
+                            {
+                                Console.WriteLine("Failed to export           {0}, {1} for cryptographic error.",
+                                    store.Name, store.Location);
+
+                                Console.WriteLine("Error message: ");
+                                Console.WriteLine(ex.Message);
+
+                                //return false; --> We should continue to search for other stores
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine("Failed to export           {0}, {1} due to unknown error.",
+                                    store.Name, store.Location);
+
+                                Console.WriteLine("Error message: ");
+                                Console.WriteLine(ex.Message);
+
+                                //return false; --> We should continue to search for other stores
+                            }
+                            
+                            break;
+                        }
+
+                    }
+                }
+                catch(Exception ex)
+                {
+                    // do nothing if it just couldn't open a store or find it
+                }
+            }
+
+
+        }
+    }
+
+    public static void DisplayCertificate(X509Certificate2 certificate, bool verbose = false)
+    {
+        Console.WriteLine("----------------------------------");
+        Console.WriteLine("Details:");
+        Console.WriteLine();
+
+        Console.WriteLine("[Subject]\n\t" + certificate.Subject);
+        Console.WriteLine();
+
+        if (verbose)
+        {
+            Console.WriteLine("[Subject Distinguished Name]\n\t" + certificate.SubjectName.Name);
+            Console.WriteLine();
+        }
+
+        if (verbose)
+        {
+            Console.WriteLine("[Friendly Name]\n\t" + certificate.FriendlyName);
+            Console.WriteLine();
+        }
+
+        if (verbose)
+        {
+            Console.WriteLine("[Archived]\n\t" + certificate.Archived);
+            Console.WriteLine();
+        }
+
+
+        Console.WriteLine("[Has Private Key]\n\t" + certificate.HasPrivateKey);
+        Console.WriteLine();
+
+        Console.WriteLine("[Version]\n\t" + certificate.Version);
+        Console.WriteLine();
+
+        Console.WriteLine("[Issuer]\n\t" + certificate.Issuer);
+        Console.WriteLine();
+
+        if (verbose)
+        {
+            Console.WriteLine("[Issuer Distinguished Name]\n\t" + certificate.IssuerName.Name);
+            Console.WriteLine();
+        }
+
+        Console.WriteLine("[Serial Number]\n\t" + certificate.SerialNumber);
+        Console.WriteLine();
+
+        Console.WriteLine("[Not Before]\n\t" + certificate.NotBefore);
+        Console.WriteLine();
+
+        Console.WriteLine("[Not After]\n\t" + certificate.NotAfter);
+        Console.WriteLine();
+
+        Console.WriteLine("[Thumbprint]\n\t" + certificate.Thumbprint);
+        Console.WriteLine();
+
+        if (verbose)
+        {
+            Console.WriteLine("[Serial Number]\n\t" + certificate.SerialNumber);
+            Console.WriteLine();
+
+            Console.WriteLine("[Signature Algorithm]\n\t" + certificate.SignatureAlgorithm.Value);
+            Console.WriteLine();
+
+            Console.WriteLine("[Signature Algorithm Friendly Name]\n\t" + certificate.SignatureAlgorithm.FriendlyName);
+            Console.WriteLine();
+
+            Console.WriteLine("[Public Key]\n\t" + certificate.GetPublicKeyString());
+            Console.WriteLine();
+
+            if (certificate.HasPrivateKey)
+            {
+                Console.WriteLine("[Private Key]");
+                try
+                {
+                    Console.WriteLine("\t" + certificate.PrivateKey.ToXmlString(true));
+                    Console.WriteLine();
+                }
+                catch (CryptographicException ex)
+                {
+                    Console.WriteLine("\t" + "Error: Could not export private key!");
+                    Console.WriteLine("\t" + "Error Mesage: {0}", ex.Message);
+                }
+
+            }
+
+            Console.WriteLine("[Key Algorithm]\n\t" + certificate.GetKeyAlgorithm());
+            Console.WriteLine();
+
+            Console.WriteLine("[Key Algorithm Parameters]\n\t" + certificate.GetKeyAlgorithmParametersString());
+            Console.WriteLine();
+
+            Console.WriteLine("[Verified]\n\t" + certificate.Verify());
+            Console.WriteLine();
+
+            Console.WriteLine("Extensions:");
+            Console.WriteLine();
+
+            foreach (X509Extension extension in certificate.Extensions)
+            {
+                if (extension.Oid.FriendlyName == "Enhanced Key Usage")
+                {
+                    X509EnhancedKeyUsageExtension ext = (X509EnhancedKeyUsageExtension)extension;
+                    OidCollection oids = ext.EnhancedKeyUsages;
+                    foreach (Oid oid in oids)
+                    {
+                        Console.WriteLine("\t[Friendly Name]\n\t\t" + oid.FriendlyName);
+                        Console.WriteLine();
+
+                        Console.WriteLine("\t[OID]\n\t\t" + oid.Value);
+                        Console.WriteLine();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("\t[Friendly Name]\n\t\t" + extension.Oid.FriendlyName);
+                    Console.WriteLine();
+
+                    Console.WriteLine("\t[OID]\n\t\t" + extension.Oid.Value);
+                    Console.WriteLine();
+                }
+
+                Console.WriteLine("\t\t----------------------------------");
+            }
+        }
+        Console.WriteLine();
+    }
+
     public static bool Export(string thumbprint, X509ContentType type)
     {
         foreach (StoreLocation storeLocation in (StoreLocation[])
@@ -221,7 +399,6 @@ public class Program
                     {
                         if (certificate.GetCertHashString() == thumbprint)
                         {
-                            Console.WriteLine("Details: " + certificate.ToString());
 
                             string output = "";
 
