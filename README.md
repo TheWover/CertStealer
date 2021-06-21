@@ -6,7 +6,9 @@ This tool is flagged as malware by Defender, even though it's custom. It is misi
 
 If you export a certificate with a private key as PFX then the password will be blank. *Blank*, not non-existent.
 
-If keys are marked as not exportable then you will have to patch CAPI to allow export of non-exportable keys. This can be done with mimikatz via the `crypto::capi` command.
+If keys are marked as not exportable then you will have to patch CAPI to allow export of non-exportable keys in the current process. This can be done with mimikatz via the `crypto::capi` command. If you are trying to export device certificates that are not exportable, mimikatz can instead patch the memory of the running lsass.exe process to bypass protections using the `crypto::cng` command.
+
+Alternatively, you may extract the private keys manually using DPAPI operations. Use the user's DPAPI masterkey, (or a password, domain DPAPI private key, or system backup key to first decrypt the user's masterkey) to extract and decrypt the user's certificates from the registry. This can be done with SharpDPAPI or mimikatz. For more details, checkout the THEFT2 and THEFT3 sections of SpecterOps's whitepaper: [Certified Pre-Owned](https://posts.specterops.io/certified-pre-owned-d95910965cd2). (Really you should just read that whole paper.)
 
 ```
 Examples:
