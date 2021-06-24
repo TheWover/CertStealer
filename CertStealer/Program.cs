@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using CommandLine;
@@ -14,6 +13,9 @@ public class Program
 
         [Option('e', "export", Required = false, HelpText = "Export a serialized cert by its thumbprint.")]
         public bool Export { get; set; }
+
+        [Option('p', "password", Required = false, Default = "", HelpText = "Optionally provide a password for protecting a PFX export.")]
+        public string Password { get; set; }
 
         [Option('l', "list", Required = false, HelpText = "Lists all certs, their details, and prints them in their serialized form.")]
         public bool List { get; set; }
@@ -67,7 +69,7 @@ public class Program
                                        Export(thumbprint, X509ContentType.SerializedCert);
                                        break;
                                    case "pfx":
-                                       Export(thumbprint, X509ContentType.Pfx);
+                                       Export(thumbprint, X509ContentType.Pfx, o.Password);
                                        break;
                                }
 
@@ -407,7 +409,7 @@ public class Program
         Console.WriteLine();
     }
 
-    public static bool Export(string thumbprint, X509ContentType type)
+    public static bool Export(string thumbprint, X509ContentType type, string password = "")
     {
         foreach (StoreLocation storeLocation in (StoreLocation[])
             Enum.GetValues(typeof(StoreLocation)))
@@ -429,9 +431,9 @@ public class Program
                             string output = "";
 
                             if (type == X509ContentType.SerializedCert)
-                                output = Convert.ToBase64String(certificate.Export(X509ContentType.SerializedCert));
+                                output = Convert.ToBase64String(certificate.Export(X509ContentType.SerializedCert, password));
                             else if (type == X509ContentType.Pfx)
-                                output = Convert.ToBase64String(certificate.Export(X509ContentType.Pfx));
+                                output = Convert.ToBase64String(certificate.Export(X509ContentType.Pfx, password));
 
                             Console.WriteLine();
                             Console.WriteLine("Output Type: " + type);
@@ -525,6 +527,7 @@ public class Program
         Console.WriteLine("Listing all certs within the CA store in LocalMachine: CertStealer.exe --name local --store CA --list");
         Console.WriteLine("Exporting a cert by its thumbprint: CertStealer.exe -export AF724CB571166C24C0799E65BE4772B10814BDD2");
         Console.WriteLine("Exporting a cert by its thumbprint as PFX: CertStealer.exe -export pfx AF724CB571166C24C0799E65BE4772B10814BDD2");
+        Console.WriteLine("Exporting a cert by its thumbprint as PFX, specifying a password: CertStealer.exe --password pass123 -export pfx AF724CB571166C24C0799E65BE4772B10814BDD2");
         Console.WriteLine("Importing a cert into the My store in CurrentUser: CertStealer.exe --import My user Dw...snipped...gY=");
         Console.WriteLine("Importing a cert into the CA store in LocalMachine: CertStealer.exe --import CA local Dw...snipped...gY=");
         Console.WriteLine("Use verbose output (works for list and import): CertStealer.exe --list --verbose");
