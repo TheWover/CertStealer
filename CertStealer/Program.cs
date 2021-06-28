@@ -14,7 +14,7 @@ public class Program
         [Option('e', "export", Required = false, HelpText = "Export a serialized cert by its thumbprint.")]
         public bool Export { get; set; }
 
-        [Option('p', "password", Required = false, Default = "", HelpText = "Optionally provide a password for protecting a PFX export.")]
+        [Option('p', "password", Required = false, DefaultValue = "", HelpText = "Optionally provide a password for protecting a PFX export.")]
         public string Password { get; set; }
 
         [Option('l', "list", Required = false, HelpText = "Lists all certs, their details, and prints them in their serialized form.")]
@@ -29,78 +29,76 @@ public class Program
         [Option('v', "verbose", Required = false, HelpText = "Verbose output.")]
         public bool Verbose { get; set; }
 
-        [Option('h', "help", Required = false, Default = true, HelpText = "Display help message.")]
+        [Option('h', "help", Required = false, DefaultValue = true, HelpText = "Display help message.")]
         public bool HelpMessage { get; set; }
     }
 
     static void Main(string[] args)
     {
-        Parser.Default.ParseArguments<Options>(args)
-                   .WithParsed<Options>(o =>
-                   {
-                       if (o.List)
-                       {
-                           string location = "";
-                           string store = "";
+        Options o = new Options();
+        Parser.Default.ParseArguments(args, o);
+        if (o.List)
+        {
+            string location = "";
+            string store = "";
 
-                           if (!String.IsNullOrEmpty(o.Store))
-                               store = o.Store;
+            if (!String.IsNullOrEmpty(o.Store))
+                store = o.Store;
 
-                           if (!String.IsNullOrEmpty(o.Location))
-                               location = o.Location;
+            if (!String.IsNullOrEmpty(o.Location))
+                location = o.Location;
 
-                           List(o.Verbose, location, store);
-                       }
-                       else if (o.Export)
-                       {
-                           string type = "serialized";
-                           string thumbprint = "";
-                           if (args.Length >= 2)
-                           {
-                               if (args.Length >= 3)
-                                   type = args[args.Length - 2];
-                               thumbprint = args[args.Length - 1];
+            List(o.Verbose, location, store);
+        }
+        else if (o.Export)
+        {
+            string type = "serialized";
+            string thumbprint = "";
+            if (args.Length >= 2)
+            {
+                if (args.Length >= 3)
+                    type = args[args.Length - 2];
+                thumbprint = args[args.Length - 1];
 
-                               DisplayCertificate(thumbprint, true);
+                DisplayCertificate(thumbprint, true);
 
-                               switch (type)
-                               {
-                                   case "serialized":
-                                       Export(thumbprint, X509ContentType.SerializedCert);
-                                       break;
-                                   case "pfx":
-                                       Export(thumbprint, X509ContentType.Pfx, o.Password);
-                                       break;
-                               }
+                switch (type)
+                {
+                    case "serialized":
+                        Export(thumbprint, X509ContentType.SerializedCert);
+                        break;
+                    case "pfx":
+                        Export(thumbprint, X509ContentType.Pfx, o.Password);
+                        break;
+                }
 
-                           }
-                       }
-                       else if (o.Import)
-                       {
-                           string cert = "";
-                           string storename = "My";
-                           string location = "local";
+            }
+        }
+        else if (o.Import)
+        {
+            string cert = "";
+            string storename = "My";
+            string location = "local";
 
-                            if (args.Length >= 3)
-                           {
-                               cert = args[args.Length - 1];
-                               location = args[args.Length - 2];
-                               storename = args[args.Length - 3];
+            if (args.Length >= 3)
+            {
+                cert = args[args.Length - 1];
+                location = args[args.Length - 2];
+                storename = args[args.Length - 3];
 
-                               switch (location)
-                               {
-                                   case "local":
-                                       Import(cert, storename, StoreLocation.LocalMachine, o.Verbose);
-                                       break;
-                                   case "user":
-                                       Import(cert, storename, StoreLocation.CurrentUser, o.Verbose);
-                                       break;
-                               }
-                           }  
-                       }
-                       else if (o.HelpMessage)
-                           Help();
-                   });
+                switch (location)
+                {
+                    case "local":
+                        Import(cert, storename, StoreLocation.LocalMachine, o.Verbose);
+                        break;
+                    case "user":
+                        Import(cert, storename, StoreLocation.CurrentUser, o.Verbose);
+                        break;
+                }
+            }  
+        }
+        else if (o.HelpMessage)
+            Help();
     }
 
     public static void List(bool verbose = false, string location = "", string name = "")
