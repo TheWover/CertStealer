@@ -37,6 +37,7 @@ public class Program
     {
         Options o = new Options();
         Parser.Default.ParseArguments(args, o);
+        //TODO: Add a "capi" and "cng" option and do them first
         if (o.List)
         {
             string location = "";
